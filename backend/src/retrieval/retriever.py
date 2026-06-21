@@ -79,15 +79,26 @@ class Retriever:
             import sqlite3
             db_file = os.path.join(settings.CHROMA_DB_PATH, "chroma.sqlite3")
             if os.path.exists(db_file):
-                conn = sqlite3.connect(db_file)
-                cursor = conn.cursor()
-                cursor.execute("PRAGMA journal_mode=WAL;")
-                cursor.execute("PRAGMA synchronous=NORMAL;")
-                # Fetch output to verify WAL mode
-                cursor.execute("PRAGMA journal_mode;")
-                res = cursor.fetchone()
-                print(f"[SQLite Optimizer] SQLite WAL journal mode verified: {res[0] if res else 'WAL'}")
-                conn.close()
+                try:
+                    conn = sqlite3.connect(db_file)
+                    cursor = conn.cursor()
+                    cursor.execute("PRAGMA journal_mode=WAL;")
+                    cursor.execute("PRAGMA synchronous=NORMAL;")
+                    # Verify WAL mode
+                    cursor.execute("PRAGMA journal_mode;")
+                    res = cursor.fetchone()
+                    print(f"[SQLite Optimizer] SQLite WAL journal mode verified: {res[0] if res else 'WAL'}")
+                    conn.close()
+                except sqlite3.OperationalError as oe:
+                    if "no such column: collections.topic" in str(oe):
+                        print("[SQLite Optimizer] Detected outdated schema. Removing and recreating DB.")
+                        try:
+                            os.remove(db_file)
+                            # Also remove related lock files if any
+                        except Exception as rm_err:
+                            print(f"[SQLite Optimizer] Failed to remove DB file: {rm_err}")
+                    else:
+                        raise
         except Exception as e:
             print(f"[SQLite Optimizer] Error optimizing SQLite: {e}")
 
