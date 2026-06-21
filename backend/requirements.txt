@@ -1,0 +1,27 @@
+# Core Framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+pydantic==2.6.1
+python-dotenv==1.0.1
+
+# RAG Components
+langchain==0.1.9
+langchain-community==0.0.24
+chromadb==0.4.24
+sentence-transformers==2.5.1
+fastembed==0.8.0
+
+# PDF Processing
+PyMuPDF==1.23.26
+pypdf==4.0.2
+
+# Vector Search (Alternative)
+faiss-cpu==1.7.4
+
+# API & Utils
+requests==2.31.0
+pydantic-settings==2.2.1
+
+# Optional: BM25 for hybrid search
+rank-bm25==0.2.2
+groq==0.9.0

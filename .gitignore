@@ -1,0 +1,113 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Node/React Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.eslintcache
+.parcel-cache
+.cache/
+
+# Project Specific Data & Databases
+backend/data/models/
+backend/data/processed/rag_history.json
+
+# Allow tracking of pre-built Chroma database directories & files
+!backend/data/vector_db/
+backend/data/vector_db/chroma.sqlite3-shm
+backend/data/vector_db/chroma.sqlite3-wal
+
+# Log Files
+*.log
+logs/
+backend/logs/
+
+# Personal and Workspace Scratch files
+task_report.md
+backend/task_report.md
+verify_focus.py
+backend/verify_focus.py
+scratch/
+backend/scratch/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

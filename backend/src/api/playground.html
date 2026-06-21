@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚖️ RAG Diagnostics Playground</title>
+    <!-- IBM Plex Mono, Lora, and Inter Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons via CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Lora', 'Georgia', 'serif'],
+                        mono: ['IBM Plex Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* CSS Theme Variables (Seriousness, Stark B&W Retro) */
+        :root {
+            /* Default: Stark Retro Dark Mode (Obsidian) */
+            --bg-color: #000000;
+            --card-bg: #0d0d0d;
+            --border-color: #262626;
+            --text-primary: #f5f5f5;
+            --text-secondary: #737373;
+            --accent-color: #ffffff;
+            --accent-hover: #e5e5e5;
+            --accent-rgb: 255, 255, 255;
+            --code-bg: #080808;
+            --preamble-color: #a3a3a3;
+            --latency-reformulation: #737373;
+            --latency-routing: #a3a3a3;
+            --latency-retrieval: #e5e5e5;
+            --latency-generation: #ffffff;
+        }
+
+        :root.light-mode {
+            /* Paper Retro / Editorial Light Mode (Parchment) */
+            --bg-color: #fafafa;
+            --card-bg: #ffffff;
+            --border-color: #d4d4d4;
+            --text-primary: #0a0a0a;
+            --text-secondary: #737373;
+            --accent-color: #000000;
+            --accent-hover: #171717;
+            --accent-rgb: 0, 0, 0;
+            --code-bg: #f2f2f2;
+            --preamble-color: #404040;
+            --latency-reformulation: #a3a3a3;
+            --latency-routing: #737373;
+            --latency-retrieval: #404040;
+            --latency-generation: #000000;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .theme-card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+
+        .theme-border {
+            border-color: var(--border-color);
+        }
+
+        .theme-text-primary {
+            color: var(--text-primary);
+        }
+
+        .theme-text-secondary {
+            color: var(--text-secondary);
+        }
+
+        .theme-accent-text {
+            color: var(--accent-color);
+        }
+
+        .theme-code {
+            background-color: var(--code-bg);
+        }
+
+        .theme-btn {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            transition: all 0.15s ease;
+        }
+
+        .theme-btn:hover {
+            background-color: transparent;
+            color: var(--accent-color);
+        }
+
+        /* Minimal scrollbars */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- Navbar -->
+    <header class="border-b theme-border theme-card px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="border theme-border px-2.5 py-1.5 font-mono font-bold text-base bg-[var(--card-bg)] theme-text-primary rounded">
+                ⚖
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight theme-text-primary flex items-center space-x-2">
+                    <span class="font-serif italic font-bold">Bharat Samvidhan AI</span>
+                    <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border theme-border theme-text-primary font-mono">[DIAGNOSTIC COMPILER]</span>
+                </h1>
+                <p class="text-[10px] theme-text-secondary font-mono uppercase tracking-wider">Official Statutory Code and Constitutional Trace Diagnostics</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <!-- Theme Toggle Button -->
+            <button id="themeToggleBtn" onclick="toggleTheme()" class="text-xs px-3 py-1.5 border theme-border hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)] rounded transition-colors font-mono font-bold uppercase">
+                <!-- Swapped in by JS -->
+            </button>
+            <a href="/" class="text-xs border theme-border hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)] px-3 py-1.5 rounded flex items-center space-x-1.5 transition-colors font-mono font-bold uppercase">
+                <i data-lucide="arrow-left" class="w-3 h-3"></i>
+                <span>[←] EXIT</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Sidebar Controls -->
+        <section class="lg:col-span-1 flex flex-col space-y-6">
+            <!-- Query Form Card -->
+            <div class="theme-card border rounded p-6">
+                <h2 class="text-xs font-bold tracking-wider uppercase theme-text-primary mb-4 flex items-center space-x-2 font-mono">
+                    <span>[COMPILE INPUT]</span>
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="queryInput" class="block text-[10px] font-bold theme-text-secondary uppercase tracking-widest mb-2 font-mono">[CITIZEN QUERY]</label>
+                        <textarea id="queryInput" rows="5" class="w-full theme-code border theme-border rounded p-3 text-xs focus:outline-none focus:border-[var(--accent-color)] theme-text-primary resize-none transition-all font-mono" placeholder="Input legal query here..."></textarea>
+                    </div>
+                    
+                    <button id="runBtn" class="w-full theme-btn font-bold py-2.5 px-4 rounded flex items-center justify-center space-x-2 uppercase tracking-wider text-xs font-mono">
+                        <span>[▶] COMPILE & TRACE</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Presets Card -->
+            <div class="theme-card border rounded p-6">
+                <h2 class="text-xs font-bold tracking-wider uppercase theme-text-primary mb-3 flex items-center space-x-2 font-mono">
+                    <span>[TEST SCENARIOS]</span>
+                </h2>
+                <div class="flex flex-col space-y-2" id="presetChips">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Status HUD -->
+            <div class="theme-card border rounded p-6 flex flex-col space-y-4">
+                <h2 class="text-xs font-bold tracking-wider uppercase theme-text-primary flex items-center space-x-2 font-mono">
+                    <span>[SANDBOX PARAMETERS]</span>
+                </h2>
+                <div class="grid grid-cols-2 gap-4 text-xs font-mono">
+                    <div class="theme-code border theme-border p-3 rounded col-span-2">
+                        <span class="theme-text-secondary block text-[9px] uppercase font-bold tracking-widest mb-1">[EMBEDDING SPACE]</span>
+                        <span class="font-mono font-semibold theme-text-primary truncate block" id="paramEmbed">BAAI/bge-small-en</span>
+                    </div>
+                    <div class="theme-code border theme-border p-3 rounded col-span-2">
+                        <span class="theme-text-secondary block text-[9px] uppercase font-bold tracking-widest mb-1">[OLLAMA LLM NODE]</span>
+                        <span class="font-mono font-semibold theme-text-primary truncate block" id="paramModel">llama3.2:1b</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Output Board (Tabs & Visualizations) -->
+        <section class="lg:col-span-2 flex flex-col space-y-6">
+            
+            <!-- Output Header & Tabs -->
+            <div class="theme-card border rounded overflow-hidden flex flex-col h-[700px]">
+                <div class="border-b theme-border theme-card px-6 py-1 flex items-center justify-between">
+                    <!-- Tabs -->
+                    <div class="flex space-x-1" id="tabContainer">
+                        <button class="tab-btn px-4 py-3 text-[11px] font-mono font-bold uppercase tracking-wider theme-text-primary border-b-2" style="border-color: var(--accent-color);" onclick="switchTab('overview')">[OVERVIEW]</button>
+                        <button class="tab-btn px-4 py-3 text-[11px] font-mono font-bold uppercase tracking-wider theme-text-secondary hover:theme-text-primary transition-colors" onclick="switchTab('retrieval')">[RETRIEVAL TRACE]</button>
+                        <button class="tab-btn px-4 py-3 text-[11px] font-mono font-bold uppercase tracking-wider theme-text-secondary hover:theme-text-primary transition-colors" onclick="switchTab('prompt')">[PROMPT HUD]</button>
+                    </div>
+                    <!-- Right Metrics -->
+                    <div class="hidden sm:flex items-center space-x-1.5 text-xs theme-text-secondary font-mono" id="totalLatencyIndicator">
+                        <span>[LATENCY: <span class="font-bold theme-text-primary" id="latencyVal">0.00s</span>]</span>
+                    </div>
+                </div>
+
+                <!-- Tab Content Pane -->
+                <div class="flex-1 p-6 overflow-y-auto theme-code/10" id="outputPane">
+                    
+                    <!-- DEFAULT INITIAL STATE -->
+                    <div id="initialState" class="h-full flex flex-col items-center justify-center text-center p-8">
+                        <div class="border theme-border theme-card p-4 rounded theme-text-secondary mb-4">
+                            <i data-lucide="terminal" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-sm font-mono font-bold uppercase tracking-wider theme-text-primary mb-2">[NO ACTIVE TRACE EXECUTION]</h3>
+                        <p class="text-xs theme-text-secondary max-w-sm">Enter a custom query or select a test scenario to compile the RAG trace dashboard.</p>
+                    </div>
+
+                    <!-- LOADING STATE -->
+                    <div id="loadingState" class="hidden h-full flex flex-col items-center justify-center text-center p-8">
+                        <div class="w-8 h-8 border-2 rounded animate-spin mb-4" style="border-color: var(--accent-color); border-top-color: transparent;"></div>
+                        <h3 class="text-sm font-mono font-bold uppercase tracking-wider theme-text-primary mb-2">[COMPILING EXECUTION TRACE]</h3>
+                        <p class="text-xs theme-text-secondary max-w-sm font-mono" id="loadingStageText">Pinging SQLite WAL engine and local model nodes...</p>
+                    </div>
+
+                    <!-- TAB: OVERVIEW -->
+                    <div id="tab-overview" class="hidden space-y-6">
+                        <!-- Top Info Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="theme-card border p-4 rounded">
+                                <span class="text-[9px] font-mono font-bold theme-text-secondary uppercase tracking-widest block mb-1">[ROUTED DOMAIN]</span>
+                                <span class="text-xs font-mono font-bold theme-accent-text uppercase flex items-center space-x-1.5" id="resDomain">
+                                    <span>N/A</span>
+                                </span>
+                            </div>
+                            <div class="theme-card border p-4 rounded col-span-2 font-mono">
+                                <span class="text-[9px] font-mono font-bold theme-text-secondary uppercase tracking-widest block mb-1">[STANDALONE QUERY]</span>
+                                <span class="text-xs font-semibold theme-text-primary italic block truncate font-serif" id="resReformulated">"N/A"</span>
+                            </div>
+                        </div>
+
+                        <!-- Latency Bars -->
+                        <div class="theme-card border p-5 rounded space-y-4">
+                            <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest">[PIPELINE LATENCY PROFILE]</h4>
+                            <div class="space-y-3.5 text-xs font-mono" id="latencyBarsContainer">
+                                <!-- Bars inserted dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Injected Profile Memory Facts -->
+                        <div class="theme-card border p-5 rounded space-y-2">
+                            <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest flex items-center space-x-2">
+                                <span>[USER PROFILE MEMORY CONTEXT]</span>
+                            </h4>
+                            <ul class="text-xs theme-text-secondary space-y-1.5 pl-4 list-disc font-serif" id="resMemoryList">
+                                <li>No memory facts recovered for this search context.</li>
+                            </ul>
+                        </div>
+
+                        <!-- LLM Answer -->
+                        <div class="theme-card border p-6 rounded space-y-3.5">
+                            <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest flex items-center space-x-2">
+                                <span>[SYNTHESIZED REFERENCE ANSWER]</span>
+                            </h4>
+                            <div class="text-xs theme-text-primary leading-relaxed font-serif whitespace-pre-wrap" id="resAnswer" style="font-size: 13.5px;">
+                                Answer content will appear here...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: RETRIEVAL TRACE -->
+                    <div id="tab-retrieval" class="hidden space-y-6">
+                        <!-- Dense vs Sparse Comparison Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Dense Vector Search Hits (Chroma) -->
+                            <div class="space-y-3">
+                                <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest flex items-center space-x-2">
+                                    <span>[DENSE VECTOR HITS (CHROMADB)]</span>
+                                </h4>
+                                <div class="space-y-2.5 font-serif" id="denseHitsList">
+                                    <!-- Dynamic -->
+                                </div>
+                            </div>
+                            <!-- Sparse Keyword Search Hits (BM25) -->
+                            <div class="space-y-3">
+                                <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest flex items-center space-x-2">
+                                    <span>[SPARSE KEYWORD HITS (BM25)]</span>
+                                </h4>
+                                <div class="space-y-2.5 font-serif" id="sparseHitsList">
+                                    <!-- Dynamic -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blended List -->
+                        <div class="space-y-3">
+                            <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest flex items-center space-x-2">
+                                <span>[BLENDED & DEDUPLICATED CANDIDATES]</span>
+                            </h4>
+                            <div class="space-y-2.5 font-serif" id="blendedHitsList">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+
+                        <!-- Adjacent Fetched Nodes -->
+                        <div class="space-y-3">
+                            <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest flex items-center space-x-2">
+                                <span>[ADJACENT INDEX CONTEXT NODES]</span>
+                            </h4>
+                            <div class="space-y-2.5 font-serif" id="adjacentHitsList">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: PROMPT HUD -->
+                    <div id="tab-prompt" class="hidden h-full flex flex-col space-y-3">
+                        <div class="flex items-center justify-between font-mono">
+                            <h4 class="text-[9px] font-mono font-bold theme-text-primary uppercase tracking-widest">[COMPILED CONTEXT PROMPT HUD]</h4>
+                            <span class="text-xs theme-text-secondary font-mono" id="promptWordCount">[0 words]</span>
+                        </div>
+                        <div class="flex-1 theme-code border theme-border rounded p-4 overflow-auto">
+                            <pre class="text-xs font-mono theme-text-primary whitespace-pre-wrap" id="resRawPrompt">Click "Compile & Trace" to preview context logs...</pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t theme-border theme-card text-center py-4 text-[9px] font-mono font-bold uppercase tracking-widest theme-text-secondary">
+        [⚖️ BHARAT SAMVIDHAN AI • DIAGNOSTIC SANDBOX COMPILER]
+    </footer>
+
+    <!-- Script Section -->
+    <script>
+        const presets = [
+            { label: "Can the government suspend my right to life under Article 21 during an emergency?", query: "Can the government suspend my right to life and personal liberty during an emergency?" },
+            { label: "What is the penalty under Section 378 IPC for taking a bicycle?", query: "What is the maximum jail term if I dishonestly take someone's bicycle?" },
+            { label: "What is the maximum punishment for defamation under Section 500?", query: "What is the maximum punishment for defaming someone in public?" },
+            { label: "Does Article 22 protect from self-incrimination under Section 302?", query: "Does Article 22 protect me from self-incrimination if I am charged under Section 302 of the IPC?" },
+            { label: "What rights do I have under Article 19 to organize a rebellion?", query: "I want to start a rebellion to overthrow the Indian government. What rights do I have?" }
+        ];
+
+        let activeTab = 'overview';
+        let currentTrace = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+            loadPresets();
+            fetchSystemStatus();
+            initTheme();
+            
+            document.getElementById("runBtn").addEventListener("click", runDiagnosis);
+        });
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem("playground-theme");
+            if (savedTheme === "light") {
+                document.documentElement.classList.add("light-mode");
+            }
+            updateThemeIcon();
+        }
+
+        function toggleTheme() {
+            const root = document.documentElement;
+            root.classList.toggle("light-mode");
+            const isLight = root.classList.contains("light-mode");
+            localStorage.setItem("playground-theme", isLight ? "light" : "dark");
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const isLight = document.documentElement.classList.contains("light-mode");
+            const btn = document.getElementById("themeToggleBtn");
+            if (isLight) {
+                btn.innerHTML = `<span class="font-mono font-bold tracking-wider text-xs">[🌙] OBSIDIAN MODE</span>`;
+            } else {
+                btn.innerHTML = `<span class="font-mono font-bold tracking-wider text-xs">[☀️] PARCHMENT MODE</span>`;
+            }
+        }
+
+        function loadPresets() {
+            const container = document.getElementById("presetChips");
+            presets.forEach(p => {
+                const chip = document.createElement("button");
+                chip.className = "text-left text-xs p-3 theme-code border theme-border hover:border-[var(--accent-color)] theme-text-secondary hover:theme-text-primary rounded transition-all font-mono flex items-center justify-between";
+                chip.innerHTML = `
+                    <span class="truncate block pr-2">"${p.query}"</span>
+                    <span class="text-[var(--accent-color)] font-mono font-bold shrink-0">[→]</span>
+                `;
+                chip.onclick = () => {
+                    document.getElementById("queryInput").value = p.query;
+                    runDiagnosis();
+                };
+                container.appendChild(chip);
+            });
+        }
+
+        async function fetchSystemStatus() {
+            try {
+                const res = await fetch("/api/status");
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("paramEmbed").innerText = data.embedding_model || "BAAI/bge-small-en";
+                    document.getElementById("paramModel").innerText = data.model_name || "llama3.2:1b";
+                }
+            } catch (e) {
+                console.error("Failed to fetch system status:", e);
+            }
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            
+            const btns = document.querySelectorAll(".tab-btn");
+            btns.forEach(btn => {
+                if (btn.getAttribute("onclick").includes(tabId)) {
+                    btn.className = "tab-btn px-4 py-3 text-[11px] font-mono font-bold uppercase tracking-wider theme-text-primary border-b-2";
+                    btn.style.borderColor = "var(--accent-color)";
+                } else {
+                    btn.className = "tab-btn px-4 py-3 text-[11px] font-mono font-bold uppercase tracking-wider theme-text-secondary hover:theme-text-primary transition-colors";
+                    btn.style.borderColor = "transparent";
+                }
+            });
+
+            document.getElementById("initialState").style.display = "none";
+            document.getElementById("loadingState").style.display = "none";
+            
+            const tabs = ['overview', 'retrieval', 'prompt'];
+            tabs.forEach(t => {
+                const tabDiv = document.getElementById(`tab-${t}`);
+                if (t === tabId && currentTrace) {
+                    tabDiv.style.display = "block";
+                } else {
+                    tabDiv.style.display = "none";
+                }
+            });
+        }
+
+        async function runDiagnosis() {
+            const query = document.getElementById("queryInput").value.trim();
+            if (!query) return;
+
+            document.getElementById("initialState").style.display = "none";
+            document.getElementById("tab-overview").style.display = "none";
+            document.getElementById("tab-retrieval").style.display = "none";
+            document.getElementById("tab-prompt").style.display = "none";
+            document.getElementById("loadingState").style.display = "flex";
+
+            try {
+                const res = await fetch("/api/query/debug", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        chat_history: []
+                    })
+                });
+
+                if (res.ok) {
+                    currentTrace = await res.json();
+                    renderTrace();
+                    switchTab(activeTab);
+                } else {
+                    alert("Error executing compilation trace.");
+                    document.getElementById("initialState").style.display = "flex";
+                    document.getElementById("loadingState").style.display = "none";
+                }
+            } catch (err) {
+                console.error("Diagnosis error:", err);
+                alert("Sandbox connection error.");
+                document.getElementById("initialState").style.display = "flex";
+                document.getElementById("loadingState").style.display = "none";
+            }
+        }
+
+        function renderTrace() {
+            if (!currentTrace) return;
+
+            const totalLat = currentTrace.latency_breakdown.total;
+            document.getElementById("latencyVal").innerText = `${totalLat}s`;
+
+            document.getElementById("resDomain").innerHTML = `
+                <span>${currentTrace.domain}</span>
+            `;
+            document.getElementById("resReformulated").innerText = `"${currentTrace.reformulated_query}"`;
+
+            const breakdown = currentTrace.latency_breakdown;
+            const container = document.getElementById("latencyBarsContainer");
+            container.innerHTML = "";
+            
+            const stages = [
+                { key: "reformulation", label: "Query Reformulation (LLM core)", val: breakdown.reformulation, color: "var(--latency-reformulation)" },
+                { key: "routing", label: "Query Router (Domain checks)", val: breakdown.routing, color: "var(--latency-routing)" },
+                { key: "retrieval", label: "Information Retrieval (Chroma + BM25 + Adjacency)", val: breakdown.retrieval, color: "var(--latency-retrieval)" },
+                { key: "generation", label: "LLM Response Synthesis (Ollama node)", val: breakdown.generation, color: "var(--latency-generation)" }
+            ];
+
+            stages.forEach(s => {
+                const percentage = totalLat > 0 ? (s.val / totalLat * 100) : 0;
+                const row = document.createElement("div");
+                row.className = "space-y-1.5 font-mono";
+                row.innerHTML = `
+                    <div class="flex justify-between text-[10px]">
+                        <span class="theme-text-secondary font-medium">${s.label}</span>
+                        <span class="theme-text-primary font-bold">${s.val}s (${percentage.toFixed(0)}%)</span>
+                    </div>
+                    <div class="w-full theme-code border theme-border h-2 rounded overflow-hidden">
+                        <div class="h-full" style="width: ${percentage}%; background-color: ${s.color}"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            const memList = document.getElementById("resMemoryList");
+            memList.innerHTML = "";
+            if (currentTrace.user_profile_facts.length > 0) {
+                currentTrace.user_profile_facts.forEach(f => {
+                    const li = document.createElement("li");
+                    li.innerText = f;
+                    memList.appendChild(li);
+                });
+            } else {
+                memList.innerHTML = "<li>No profile memory injected context.</li>";
+            }
+
+            document.getElementById("resAnswer").innerText = currentTrace.answer;
+
+            renderDocList(document.getElementById("denseHitsList"), currentTrace.dense_docs, "Dense Hit");
+            renderDocList(document.getElementById("sparseHitsList"), currentTrace.sparse_docs, "BM25 Hit");
+            renderDocList(document.getElementById("blendedHitsList"), currentTrace.blended_docs, "Candidate");
+            renderDocList(document.getElementById("adjacentHitsList"), currentTrace.adjacent_docs, "Adjacent Node");
+
+            document.getElementById("resRawPrompt").innerText = currentTrace.raw_prompt;
+            const wordCount = currentTrace.raw_prompt.split(/\s+/).length;
+            document.getElementById("promptWordCount").innerText = `[${wordCount} words]`;
+
+            lucide.createIcons();
+        }
+
+        function renderDocList(container, docList, typeLabel) {
+            container.innerHTML = "";
+            if (docList.length === 0) {
+                container.innerHTML = `<div class="text-xs text-slate-500 p-4 text-center border theme-border theme-code rounded font-serif italic">No matching ${typeLabel.toLowerCase()}s.</div>`;
+                return;
+            }
+
+            docList.forEach((d, idx) => {
+                const card = document.createElement("div");
+                card.className = "theme-card border p-4 rounded text-xs space-y-2 transition-all";
+                
+                const meta = d.metadata;
+                const actName = meta.act_name || (meta.type === "article" ? "Constitution of India" : "IPC");
+                const number = meta.article_no || "N/A";
+                const docType = meta.type === "article" ? "Article" : "Section";
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b theme-border pb-2 mb-2">
+                        <span class="font-serif font-bold theme-text-primary flex items-center space-x-1.5 text-sm">
+                            <span>${actName} ${docType} ${number}</span>
+                        </span>
+                        <span class="text-[9px] font-mono tracking-wider px-1.5 py-0.5 border theme-border theme-text-secondary rounded uppercase">[${typeLabel} #${idx + 1}]</span>
+                    </div>
+                    <p class="theme-text-primary leading-relaxed font-serif text-[13px] whitespace-pre-wrap select-text">${d.content}</p>
+                    <div class="flex items-center space-x-4 text-[10px] theme-text-secondary pt-2 border-t theme-border/30 font-mono">
+                        <span>[CHAPTER/PART: <span class="theme-text-primary font-semibold">${meta.chapter || meta.part || "N/A"}</span>]</span>
+                        <span>[INDEX ID: <span class="theme-text-primary font-semibold">${meta.index !== undefined ? meta.index : "N/A"}</span>]</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+    "constitution": {
+        "practice_practise_profession_occupation_trade_business": {
+            "keywords": ["practice", "practise", "profession", "occupation", "trade", "business"],
+            "citations": ["19"]
+        },
+        "rebellion_overthrow_revolution": {
+            "keywords": ["rebellion", "overthrow", "revolution"],
+            "citations": ["19"]
+        },
+        "education_school_children_compulsory": {
+            "keywords": ["education", "school", "children", "compulsory"],
+            "citations": ["21A", "45", "30"]
+        },
+        "arrest_custody_detention_warrant_grounds": {
+            "keywords": ["arrest", "custody", "detention", "warrant", "grounds"],
+            "citations": ["22"]
+        },
+        "life_personal_liberty_deprived": {
+            "keywords": ["life", "personal liberty", "deprived"],
+            "citations": ["21"]
+        },
+        "emergency_emergency_proclamation_suspend_war_external_aggression": {
+            "keywords": ["emergency", "emergency proclamation", "suspend", "war", "external aggression"],
+            "citations": ["359", "358", "352"]
+        },
+        "equality_discrimination_equal_opportunity_untouchability": {
+            "keywords": ["equality", "discrimination", "equal opportunity", "untouchability"],
+            "citations": ["14", "15", "16", "17"]
+        },
+        "religion_religious_worship_conscience": {
+            "keywords": ["religion", "religious", "worship", "conscience"],
+            "citations": ["25", "26", "27", "28"]
+        },
+        "self-incrimination_incriminate_double_jeopardy_prosecuted_punished": {
+            "keywords": ["self-incrimination", "incriminate", "double jeopardy", "prosecuted and punished"],
+            "citations": ["20"]
+        },
+        "taxation_tax_levy_taxes_collected": {
+            "keywords": ["taxation", "tax", "levy", "taxes", "collected"],
+            "citations": ["265", "268", "269", "270"]
+        },
+        "finance_commission_recommendations": {
+            "keywords": ["finance commission", "recommendations"],
+            "citations": ["280", "281"]
+        },
+        "elections_voter_electoral_franchise_commission": {
+            "keywords": ["elections", "voter", "electoral", "franchise", "commission"],
+            "citations": ["324", "325", "326", "327"]
+        }
+    },
+    "ipc": {
+        "theft_steal_bicycle_stolen_property": {
+            "keywords": ["theft", "steal", "bicycle", "stolen", "property"],
+            "citations": ["378", "379"]
+        },
+        "murder_kill_provocation_provoke_death": {
+            "keywords": ["murder", "kill", "provocation", "provoke", "death"],
+            "citations": ["300", "302", "304"]
+        },
+        "defam_public_slander_libel": {
+            "keywords": ["defam", "public", "slander", "libel"],
+            "citations": ["499", "500"]
+        },
+        "bribe_bribing_corruption_official_gratification": {
+            "keywords": ["bribe", "bribing", "corruption", "official", "gratification"],
+            "citations": ["171B", "169"]
+        },
+        "rebellion_overthrow_sedition_rebel_waging_war": {
+            "keywords": ["rebellion", "overthrow", "sedition", "rebel", "waging war"],
+            "citations": ["121", "121A", "122", "124A"]
+        }
+    }
+}

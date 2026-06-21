@@ -1,0 +1,27 @@
+[
+  {
+    "question": "What is my right to equality?",
+    "expected_articles": ["14", "15", "16"],
+    "category": "fundamental_rights"
+  },
+  {
+    "question": "Can police arrest me without a warrant?",
+    "expected_articles": ["22"],
+    "category": "arrest_rights"
+  },
+  {
+    "question": "What is the right to education?",
+    "expected_articles": ["21A"],
+    "category": "fundamental_rights"
+  },
+  {
+    "question": "What is Article 21 about?",
+    "expected_articles": ["21"],
+    "category": "fundamental_rights"
+  },
+  {
+    "question": "Who is the executive head of the Union?",
+    "expected_articles": ["53"],
+    "category": "executive"
+  }
+]
