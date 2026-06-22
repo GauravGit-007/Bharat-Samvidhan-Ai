@@ -1310,6 +1310,11 @@
   white-space: pre-line;
 }
 
+/* Sidebar backdrop overlay element (default hidden on desktop) */
+.mobile-sidebar-overlay {
+  display: none;
+}
+
 /* ==========================================================================
    MOBILE & TABLET RESPONSIVE OVERRIDES (max-width: 768px)
    ========================================================================== */
