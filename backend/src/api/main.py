@@ -76,17 +76,28 @@ def log_rag_response(query: str, answer: str, latency: float, documents: List[Di
     except Exception as e:
         print(f"Error logging RAG response: {e}")
 
+generator_error = None
+
 @app.on_event("startup")
 async def startup_event():
-    global generator
+    global generator, generator_error
     try:
         generator = Generator()
     except Exception as e:
+        import traceback
+        generator_error = f"{e}\n{traceback.format_exc()}"
         print(f"Error initializing generator: {e}")
+        traceback.print_exc()
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "model": settings.MODEL_NAME}
+    import chromadb
+    return {
+        "status": "healthy" if not generator_error else "error",
+        "model": settings.MODEL_NAME,
+        "chromadb_version": chromadb.__version__,
+        "error": generator_error
+    }
 
 @app.get("/api/status")
 def get_system_status():
