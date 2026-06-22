@@ -49,5 +49,8 @@ ENV PORT=7860
 ENV LLM_PROVIDER=groq
 ENV MODEL_NAME=llama-3.3-70b-versatile
 
+# Fix permissions so the Hugging Face Spaces non-root user (UID 1000) can write to data directories, vector db, and history logs
+RUN chmod -R 777 /app
+
 # Command to run uvicorn server
 CMD ["sh", "-c", "python -m uvicorn src.api.main:app --host $HOST --port $PORT"]

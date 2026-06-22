@@ -6,13 +6,13 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # LLM Provider Configuration
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama")  # 'ollama' or 'huggingface'
-    HF_API_TOKEN: str = os.getenv("HF_API_TOKEN", "")
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER") or os.getenv("llm_provider") or "ollama"  # 'ollama', 'groq', or 'huggingface'
+    HF_API_TOKEN: str = os.getenv("HF_API_TOKEN") or os.getenv("hf_api_token") or ""
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY") or os.getenv("groq_api_key") or ""
 
     # Ollama Config
-    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    MODEL_NAME: str = os.getenv("MODEL_NAME", "llama3.1:8b")
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL") or os.getenv("ollama_base_url") or "http://localhost:11434"
+    MODEL_NAME: str = os.getenv("MODEL_NAME") or os.getenv("model_name") or "llama3.1:8b"
     
     # Embedding Config
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")

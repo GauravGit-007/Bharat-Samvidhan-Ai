@@ -42,7 +42,7 @@ def test_ollama():
 
 def test_groq():
     print_section("testing groq cloud api service")
-    api_key = os.getenv("GROQ_API_KEY", "")
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("groq_api_key") or ""
     
     if not api_key:
         print("[FAIL] GROQ_API_KEY NOT FOUND IN ENVIRONMENT OR .ENV FILE.")

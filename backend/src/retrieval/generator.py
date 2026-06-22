@@ -86,6 +86,9 @@ class Generator:
                 temperature=0.1,
                 max_new_tokens=512,
             )
+        elif settings.LLM_PROVIDER == "groq":
+            # Avoid Ollama tag checking and setup entirely for Groq deployments
+            self.llm = None
         else:
             # Auto-detect a working Ollama model
             working_model = check_and_select_model(settings.OLLAMA_BASE_URL, settings.MODEL_NAME)
@@ -115,17 +118,35 @@ class Generator:
         )
 
     def _invoke_llm(self, prompt: str, provider: str = "local") -> tuple[str, str]:
-        if provider == "groq" and settings.GROQ_API_KEY:
+        resolved_provider = provider
+        if provider == "local" and settings.LLM_PROVIDER == "groq" and settings.GROQ_API_KEY:
+            resolved_provider = "groq"
+
+        if resolved_provider == "groq" and settings.GROQ_API_KEY:
             return self._invoke_groq(prompt)
-        else:
+        elif self.llm:
             return self.llm.invoke(prompt), settings.MODEL_NAME
+        else:
+            return (
+                "⚖️ Service Temporarily Unavailable: No working LLM provider configured.",
+                "error_no_provider"
+            )
 
     def _stream_llm(self, prompt: str, provider: str = "local"):
-        if provider == "groq" and settings.GROQ_API_KEY:
+        resolved_provider = provider
+        if provider == "local" and settings.LLM_PROVIDER == "groq" and settings.GROQ_API_KEY:
+            resolved_provider = "groq"
+
+        if resolved_provider == "groq" and settings.GROQ_API_KEY:
             yield from self._stream_groq(prompt)
-        else:
+        elif self.llm:
             for chunk in self.llm.stream(prompt):
                 yield chunk, settings.MODEL_NAME
+        else:
+            yield (
+                "⚖️ Service Temporarily Unavailable: No working LLM provider configured.",
+                "error_no_provider"
+            )
 
     def _invoke_groq(self, prompt: str) -> tuple[str, str]:
         if not self.groq_client:
