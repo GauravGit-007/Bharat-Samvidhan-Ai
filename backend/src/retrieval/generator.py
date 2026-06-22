@@ -350,7 +350,7 @@ Standalone query:"""
             
         return self.route_query(search_query) if is_default else focus
 
-    def generate_rag_response(self, query: str, chat_history: list = None, provider: str = "local", focus = "both"):
+    def generate_rag_response(self, query: str, chat_history: list = None, provider: str = "local", focus = "both", session_id: str = "default"):
         import time
         start_time = time.time()
         
@@ -366,7 +366,7 @@ Standalone query:"""
         retrieval_latency = time.time() - ret_start
         
         # Retrieve user profile facts
-        user_facts = self.retriever.get_relevant_user_profile_facts(search_query)
+        user_facts = self.retriever.get_relevant_user_profile_facts(search_query, session_id=session_id)
         user_profile_context = "\n".join([f"- {fact.page_content}" for fact in user_facts]) if user_facts else "No personal profile information recorded yet."
         
         # Format chat history context for generation prompt
@@ -418,7 +418,7 @@ Standalone query:"""
         }
 
 
-    def generate_debug_trace(self, query: str, chat_history: list = None, provider: str = "local", focus = "both"):
+    def generate_debug_trace(self, query: str, chat_history: list = None, provider: str = "local", focus = "both", session_id: str = "default"):
         import time
         import re
         start_time = time.time()
@@ -571,7 +571,7 @@ Standalone query:"""
         retrieval_latency = time.time() - ret_start
         
         # 4. Fetch user profile facts
-        user_facts = self.retriever.get_relevant_user_profile_facts(search_query)
+        user_facts = self.retriever.get_relevant_user_profile_facts(search_query, session_id=session_id)
         user_profile_context = "\n".join([f"- {fact.page_content}" for fact in user_facts]) if user_facts else "No personal profile information recorded yet."
         
         # 5. Format prompt template
@@ -618,10 +618,10 @@ Standalone query:"""
             }
         }
 
-    def consolidate_and_save_fact(self, new_fact: str, provider: str = "local"):
-        existing_docs = self.retriever.get_all_user_profile_facts()
+    def consolidate_and_save_fact(self, new_fact: str, provider: str = "local", session_id: str = "default"):
+        existing_docs = self.retriever.get_all_user_profile_facts(session_id=session_id)
         if not existing_docs:
-            self.retriever.add_user_profile_fact(new_fact)
+            self.retriever.add_user_profile_fact(new_fact, session_id=session_id)
             return
             
         existing_facts_formatted = ""
@@ -675,9 +675,9 @@ JSON:"""
             print(f"[Memory RAG] Error during memory consolidation: {e}")
             
         # Finally, save the new fact
-        self.retriever.add_user_profile_fact(new_fact)
+        self.retriever.add_user_profile_fact(new_fact, session_id=session_id)
 
-    def extract_and_save_user_data(self, query: str, provider: str = "local"):
+    def extract_and_save_user_data(self, query: str, provider: str = "local", session_id: str = "default"):
         # Pre-filter user data phrases to avoid extra LLM latency for standard legal queries
         personal_keywords = ["my name", "i am a", "i live in", "i work as", "my age", "old from", "from city", "scenario", "situation", "name is", "i am from"]
         query_lower = query.lower()
@@ -702,7 +702,7 @@ JSON:"""
                     if "note:" in fact_lower or "the query" in fact_lower or "the user is" in fact_lower or "mention" in fact_lower or "ignore" in fact_lower:
                         continue
                     print(f"[Memory RAG] Consolidating and saving user profile fact: {fact}")
-                    self.consolidate_and_save_fact(fact, provider=provider)
+                    self.consolidate_and_save_fact(fact, provider=provider, session_id=session_id)
         except Exception as e:
             print(f"[Memory RAG] Error extracting user data: {e}")
 
@@ -729,7 +729,7 @@ JSON:"""
                 
         return summary
 
-    def generate_rag_stream(self, query: str, chat_history: list = None, provider: str = "local", focus = "both"):
+    def generate_rag_stream(self, query: str, chat_history: list = None, provider: str = "local", focus = "both", session_id: str = "default"):
         import time
         start_time = time.time()
         
@@ -743,7 +743,7 @@ JSON:"""
         context, docs = self._get_safe_context_and_docs(search_query, domain=domain)
         
         # Retrieve user profile facts
-        user_facts = self.retriever.get_relevant_user_profile_facts(search_query)
+        user_facts = self.retriever.get_relevant_user_profile_facts(search_query, session_id=session_id)
         user_profile_context = "\n".join([f"- {fact.page_content}" for fact in user_facts]) if user_facts else "No personal profile information recorded yet."
         
         # Format chat history context for generation prompt
@@ -799,11 +799,11 @@ JSON:"""
             "model_used": model_used
         }
 
-    def generate_with_custom_prompt(self, query: str):
+    def generate_with_custom_prompt(self, query: str, session_id: str = "default"):
         # Using the more detailed system prompt
         context, docs = self._get_safe_context_and_docs(query)
         
-        user_facts = self.retriever.get_relevant_user_profile_facts(query)
+        user_facts = self.retriever.get_relevant_user_profile_facts(query, session_id=session_id)
         user_profile_context = "\n".join([f"- {fact.page_content}" for fact in user_facts]) if user_facts else "No personal profile information recorded yet."
         
         full_prompt = SYSTEM_PROMPT.format(

@@ -316,26 +316,26 @@ class Retriever:
             results.append(doc)
         return results
 
-    def add_user_profile_fact(self, fact: str):
+    def add_user_profile_fact(self, fact: str, session_id: str = "default"):
         try:
-            self.user_profile_db.add_texts(texts=[fact], metadatas=[{"type": "user_data"}])
+            self.user_profile_db.add_texts(texts=[fact], metadatas=[{"type": "user_data", "session_id": session_id}])
         except Exception as e:
             print(f"Error adding user profile fact: {e}")
 
-    def get_relevant_user_profile_facts(self, query: str, k: int = 3):
+    def get_relevant_user_profile_facts(self, query: str, k: int = 3, session_id: str = "default"):
         try:
             if self.user_profile_db._collection.count() == 0:
                 return []
-            return self.user_profile_db.similarity_search(query, k=k)
+            return self.user_profile_db.similarity_search(query, k=k, filter={"session_id": session_id})
         except Exception as e:
             print(f"Error reading user profile facts: {e}")
             return []
 
-    def get_all_user_profile_facts(self):
+    def get_all_user_profile_facts(self, session_id: str = "default"):
         try:
             if self.user_profile_db._collection.count() == 0:
                 return []
-            res = self.user_profile_db.get()
+            res = self.user_profile_db.get(where={"session_id": session_id})
             docs = []
             if res and res.get("documents"):
                 from langchain_core.documents import Document

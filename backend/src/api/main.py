@@ -35,6 +35,7 @@ class QueryRequest(BaseModel):
     chat_history: List[Message] = []
     model_provider: str = "local"  # "local" or "groq"
     focus: Union[str, List[str]] = "both"  # accepts a single string or a list of strings (e.g. ["marriage", "evidence"])
+    session_id: str = "default"
 
 class QueryResponse(BaseModel):
     query: str
@@ -187,11 +188,12 @@ async def query_constitution(request_data: QueryRequest, request: Request, backg
             request_data.query, 
             chat_history=chat_history_dicts, 
             provider=request_data.model_provider,
-            focus=request_data.focus
+            focus=request_data.focus,
+            session_id=request_data.session_id
         )
         
         # Run fact extraction in the background (using local default)
-        background_tasks.add_task(generator.extract_and_save_user_data, request_data.query, "local")
+        background_tasks.add_task(generator.extract_and_save_user_data, request_data.query, "local", request_data.session_id)
         
         # Log the response in history
         log_rag_response(
@@ -218,7 +220,7 @@ async def query_constitution_stream(request_data: QueryRequest, request: Request
             raise HTTPException(status_code=429, detail=reason)
             
     # Run user fact extraction in the background (using local default)
-    background_tasks.add_task(generator.extract_and_save_user_data, request_data.query, "local")
+    background_tasks.add_task(generator.extract_and_save_user_data, request_data.query, "local", request_data.session_id)
     
     from fastapi.responses import StreamingResponse
     
@@ -234,7 +236,8 @@ async def query_constitution_stream(request_data: QueryRequest, request: Request
                 request_data.query, 
                 chat_history=chat_history_dicts, 
                 provider=request_data.model_provider,
-                focus=request_data.focus
+                focus=request_data.focus,
+                session_id=request_data.session_id
             ):
                 if chunk["type"] == "documents":
                     retrieved_docs = chunk["documents"]

@@ -303,7 +303,8 @@ function App() {
           query: queryToSend,
           chat_history: apiChatHistory,
           model_provider: modelProvider,
-          focus: selectedDomains
+          focus: selectedDomains,
+          session_id: activeSessionId
         })
       });
 
