@@ -161,7 +161,7 @@ class Generator:
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
-                max_completion_tokens=1024,
+                max_tokens=1024,
             )
             content = completion.choices[0].message.content
             if content:
@@ -175,7 +175,7 @@ class Generator:
                 model="llama-3.1-8b-instant",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
-                max_completion_tokens=1024,
+                max_tokens=1024,
             )
             content = completion.choices[0].message.content
             if content:
@@ -201,7 +201,7 @@ class Generator:
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
-                max_completion_tokens=1024,
+                max_tokens=1024,
                 stream=True
             )
             
@@ -222,7 +222,7 @@ class Generator:
                 model="llama-3.1-8b-instant",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
-                max_completion_tokens=1024,
+                max_tokens=1024,
                 stream=True
             )
             
