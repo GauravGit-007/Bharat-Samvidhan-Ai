@@ -509,6 +509,9 @@ function App() {
   return (
     <div className={`app-wrapper ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`} data-theme={theme}>
       
+      {/* Mobile Sidebar Overlay */}
+      <div className="mobile-sidebar-overlay" onClick={() => setSidebarCollapsed(true)} />
+      
       {/* SIDEBAR - Ingestion & Improvement Hub */}
       <aside className="sidebar">
         <div className="brand">
